@@ -1,3 +1,2 @@
-# BUAA-Spiders
-just examples
-jiaowu: getting grades and save as tables
+# BUAA-Spiders Examples
+jiaowu: getting grades, saving as excel, and sending email
