@@ -60,7 +60,7 @@ def init() :
 # @Note: Please fill in your own access_token
 def baiduOcr(src) :
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic"
-    access_token = 'example'     #Your own access_token here
+    access_token = '24.5415f5de64ecdfdc65398bd51f8b9e3f.2592000.1600484749.282335-22117678'     #Your own access_token here
     f = open(src, 'rb')
     img = base64.b64encode(f.read())
     params = {"image":img}
@@ -92,40 +92,36 @@ def login(username, password, url, chrome) :
 
     chrome.switch_to.frame("loginIframe")
     time.sleep(1)
-    times = 0
-    while (not (jiaowuUrl in chrome.current_url)) :
-        times = times + 1
-        if (times > 10) :
-            return -1
-        username_location = chrome.find_element_by_id("unPassword")
-        password_location = chrome.find_element_by_id("pwPassword")
-        username_location.send_keys(username)
-        password_location.send_keys(password)
-        code_location = chrome.find_element_by_id("cptPassword")
-        code = chrome.find_element_by_class_name("code")
-        codeSrc = code.get_attribute("src")
-        if codeSrc!=None :
-            code.click()
-            time.sleep(1)
-
-            request = urllib.request.Request(codeSrc)
-            responce = urllib.request.urlopen(request)
-            get_img = responce.read()
-            with open("code.jpg",'wb') as fp :
-                fp.write(get_img)
-            fp.close()
-
-            ocrResult = baiduOcr("code.jpg")
-            print("ocrResult : " + ocrResult)
-            code_location.send_keys(ocrResult)
-            time.sleep(1)
-        chrome.find_element_by_class_name("submit-btn").click()
+    username_location = chrome.find_element_by_id("unPassword")
+    password_location = chrome.find_element_by_id("pwPassword")
+    username_location.send_keys(username)
+    password_location.send_keys(password)
+    code_location = chrome.find_element_by_id("cptPassword")
+    code = chrome.find_element_by_class_name("code")
+    codeSrc = code.get_attribute("src")
+    if codeSrc!=None :
+        code.click()
         time.sleep(1)
+        request = urllib.request.Request(codeSrc)
+        responce = urllib.request.urlopen(request)
+        get_img = responce.read()
+        with open("code.jpg",'wb') as fp :
+            fp.write(get_img)
+        fp.close()
+        ocrResult = baiduOcr("code.jpg")
+        print("ocrResult : " + ocrResult)
+        code_location.send_keys(ocrResult)
+        time.sleep(1)
+    chrome.find_element_by_class_name("submit-btn").click()
+    time.sleep(1)
 
     all_handles = chrome.window_handles
     for handles in all_handles:
         if chrome.current_window_handle != handles:
             chrome.switch_to_window(handles)
+    
+    if (not (jiaowuUrl in chrome.current_url)) :
+        return -1
     return 0
 
 def getGrades(chrome, gradess) :
@@ -203,8 +199,8 @@ def geneExcel(gradess) :
 # @Param: to_addrs (Email recipient`s address)
 # @Note: Please fill in your own from_addr and password
 def sendEmail(to_addrs) :
-    from_addr = 'example@qq.com'      #Your own from_addr here
-    password = 'example'       #Your own password here
+    from_addr = '923585159@qq.com'      #Your own from_addr here
+    password = 'nzxauyexrisjbbeh'       #Your own password here
     smtp_server = 'smtp.qq.com'
 
     content = 'This is an automatically sent email.\n Please check the attachment.'
@@ -231,16 +227,28 @@ if __name__ == "__main__" :
     username = input("Username :")
     password = inputPassword("Password :")
     emailAddress = input("Email Address :")
-    chrome = init()
-    if (login(username, password, vpnUrl, chrome) != 0) :
+
+    attempt = 0
+    while (True) :
+        chrome = init()
+        try :
+            loginResult = login(username, password, vpnUrl, chrome)
+        except Exception :
+            loginResult = -1
+        if (loginResult == 0) :
+            break
         chrome.quit()
-        print("An Error occurred during Login! It may be caused by: \n \
-            1) Username or password incorrect\n \
-            2) Time limit exceed\n \
-            3) Cant solve the captcha(10 attempts)\n \
-            4) Other reasons ")
-        sys.exit(1)
+        attempt = attempt + 1
+        print("Failed to log in! Times: " + str(attempt) + ".\nTry again")
+        if (attempt >= 5) :
+            print("An Error occurred during Login! It may be caused by: \n \
+                1) Username or password incorrect\n \
+                2) Time limit exceed\n \
+                3) Cant solve the captcha(5 attempts)\n \
+                4) Other reasons ")
+            sys.exit(1)
     print("Login succeed!\nGetting the grades...")
+
     gradess = []
     if (getGrades(chrome, gradess) != 0) :
         chrome.quit()
@@ -250,10 +258,12 @@ if __name__ == "__main__" :
         sys.exit(1)
     chrome.quit()
     print("Getting grades succeed!\nGenerating excel...")
+
     if (geneExcel(gradess) != 0) :
         print("An Error occured during generating excel! It`s quite strange")
         sys.exit(1)
     print("Generating excel succeed!\nSending email... ")
+
     if (sendEmail(emailAddress) != 0) :
         print("An Error occured during sending email! It may be caused by: \n \
             1) I dont know ")
