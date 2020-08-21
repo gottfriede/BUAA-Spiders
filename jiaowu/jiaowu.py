@@ -60,7 +60,7 @@ def init() :
 # @Note: Please fill in your own access_token
 def baiduOcr(src) :
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic"
-    access_token = '24.5415f5de64ecdfdc65398bd51f8b9e3f.2592000.1600484749.282335-22117678'     #Your own access_token here
+    access_token = 'example'     #Your own access_token here
     f = open(src, 'rb')
     img = base64.b64encode(f.read())
     params = {"image":img}
@@ -199,8 +199,8 @@ def geneExcel(gradess) :
 # @Param: to_addrs (Email recipient`s address)
 # @Note: Please fill in your own from_addr and password
 def sendEmail(to_addrs) :
-    from_addr = '923585159@qq.com'      #Your own from_addr here
-    password = 'nzxauyexrisjbbeh'       #Your own password here
+    from_addr = 'example'      #Your own from_addr here
+    password = 'example'       #Your own password here
     smtp_server = 'smtp.qq.com'
 
     content = 'This is an automatically sent email.\n Please check the attachment.'
